@@ -1,5 +1,2 @@
 # autoimmune
-
-A [workflowr][] project.
-
-[workflowr]: https://github.com/jdblischak/workflowr
+CountClust on autoimmune data (with Yang Li)
