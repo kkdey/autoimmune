@@ -273,7 +273,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">singlecell-clustering</a>
+      <a class="navbar-brand" href="index.html">autoimmune</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -298,6 +298,12 @@ div.tocify {
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
 
 <div class="fluid-row" id="header">
 
@@ -429,6 +435,18 @@ plot1 &lt;- ggplot(data_ggplot) + theme(panel.background = element_rect(colour =
 plot1</code></pre>
 <p><img src="RA1_pbmc_bmmc_analysis_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 </div>
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
 
 <hr>
 <p>
