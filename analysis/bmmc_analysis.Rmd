@@ -1,0 +1,216 @@
+---
+title: "BMMC autoimmune data analysis"
+author: "Kushal K Dey"
+date: "1/12/2018"
+output: html_document
+---
+
+```{r echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE}
+library(CountClust)
+library(maptpx)
+library(ggplot2)
+library(MAST)
+library(Seurat)
+```
+
+```{r}
+data <- get(load("../output/agg_data_bmmc.rda"))
+bmmc_data <- data$data
+bmmc_labs <- data$labs
+```
+
+```{r}
+bmmc <- get(load("../output/autoimmune_bmmc.rda"))
+```
+
+```{r,eval=FALSE}
+bmmc <- CreateSeuratObject(raw.data = aggregated_data_3, min.cells = 3, min.genes = 200, 
+    project = "10X_bmmc")
+```
+
+```{r echo=FALSE, eval=FALSE}
+mito.genes <- grep(pattern = "^MT-", x = rownames(x = bmmc@data), value = TRUE)
+percent.mito <- Matrix::colSums(bmmc@raw.data[mito.genes, ])/Matrix::colSums(bmmc@raw.data)
+
+# AddMetaData adds columns to object@meta.data, and is a great place to
+# stash QC stats
+bmmc <- AddMetaData(object = bmmc, metadata = percent.mito, col.name = "percent.mito")
+
+bmmc <- FilterCells(object = bmmc, subset.names = c("nGene", "percent.mito"), 
+    low.thresholds = c(200, -Inf), high.thresholds = c(2500, 0.05))
+bmmc <- NormalizeData(object = bmmc, normalization.method = "LogNormalize", 
+    scale.factor = 10000)
+
+bmmc <- FindVariableGenes(object = bmmc, mean.function = ExpMean, dispersion.function = LogVMR, 
+    x.low.cutoff = 0.0125, x.high.cutoff = 3, y.cutoff = 0.5)
+
+bmmc <- ScaleData(object = bmmc, vars.to.regress = c("nUMI", "percent.mito"))
+
+bmmc <- RunPCA(object = bmmc, pc.genes = bmmc@var.genes, do.print = TRUE, pcs.print = 1:5, 
+    genes.print = 5)
+
+PCAPlot(object = bmmc, dim.1 = 1, dim.2 = 2)
+bmmc <- ProjectPCA(object = bmmc, do.print = FALSE)
+
+bmmc <- RunTSNE(object = bmmc, dims.use = 1:10, do.fast = TRUE)
+
+TSNEPlot(object = bmmc)
+
+
+```
+
+```{r}
+data_ggplot <- data.frame(labels = bmmc_labs,
+                          tSNE_1 = bmmc@dr$tsne@cell.embeddings[, 1],
+                          tSNE_2 = bmmc@dr$tsne@cell.embeddings[, 2])
+plot1 <- ggplot(data_ggplot) + theme(panel.background = element_rect(colour = "black", size = 1), 
+                                     panel.grid.major = element_blank(), 
+                                     panel.grid.minor = element_blank(), 
+                                     axis.text.y = element_blank(),
+                                     axis.text.x = element_blank(),
+                                     axis.ticks = element_blank(),
+                                     legend.text = element_text(size = 15)) + geom_point(aes(x = tSNE_1, y = tSNE_2, color = labels), size = 0.5) + labs(x = 'tSNE 1', y = 'tSNE 2', title = '') + scale_color_discrete('')
+plot1
+```
+
+```{r}
+data_ggplot <- data.frame(labels = bmmc_labs,
+                          tSNE_1 = bmmc@dr$pca@cell.embeddings[, 1],
+                          tSNE_2 = bmmc@dr$pca@cell.embeddings[, 2])
+plot1 <- ggplot(data_ggplot) + theme(panel.background = element_rect(colour = "black", size = 1), 
+                                     panel.grid.major = element_blank(), 
+                                     panel.grid.minor = element_blank(), 
+                                     axis.text.y = element_blank(),
+                                     axis.text.x = element_blank(),
+                                     axis.ticks = element_blank(),
+                                     legend.text = element_text(size = 15)) + geom_point(aes(x = tSNE_1, y = tSNE_2, color = labels), size = 0.5) + labs(x = 'tSNE 1', y = 'tSNE 2', title = '') + scale_color_discrete('')
+plot1
+```
+
+
+## Countclust results 
+
+```{r}
+topic_clus_list <- get(load("../output/countclust_bmmc.rda"))
+```
+
+### K= 2
+
+```{r}
+labs_clus <- factor(apply(topic_clus_list[[2]]$omega, 1, function(x) return(which.max(x))))
+data_ggplot <- data.frame(labels = labs_clus,
+                          tSNE_1 = bmmc@dr$tsne@cell.embeddings[, 1],
+                          tSNE_2 = bmmc@dr$tsne@cell.embeddings[, 2])
+plot1 <- ggplot(data_ggplot) + theme(panel.background = element_rect(colour = "black", size = 1), 
+                                     panel.grid.major = element_blank(), 
+                                     panel.grid.minor = element_blank(), 
+                                     axis.text.y = element_blank(),
+                                     axis.text.x = element_blank(),
+                                     axis.ticks = element_blank(),
+                                     legend.text = element_text(size = 15)) + geom_point(aes(x = tSNE_1, y = tSNE_2, color = labels), size = 0.5) + labs(x = 'tSNE 1', y = 'tSNE 2', title = '') + scale_color_discrete('')
+plot1
+```
+
+### K= 3
+
+```{r}
+labs_clus <- factor(apply(topic_clus_list[[3]]$omega, 1, function(x) return(which.max(x))))
+data_ggplot <- data.frame(labels = labs_clus,
+                          tSNE_1 = bmmc@dr$tsne@cell.embeddings[, 1],
+                          tSNE_2 = bmmc@dr$tsne@cell.embeddings[, 2])
+plot1 <- ggplot(data_ggplot) + theme(panel.background = element_rect(colour = "black", size = 1), 
+                                     panel.grid.major = element_blank(), 
+                                     panel.grid.minor = element_blank(), 
+                                     axis.text.y = element_blank(),
+                                     axis.text.x = element_blank(),
+                                     axis.ticks = element_blank(),
+                                     legend.text = element_text(size = 15)) + geom_point(aes(x = tSNE_1, y = tSNE_2, color = labels), size = 0.5) + labs(x = 'tSNE 1', y = 'tSNE 2', title = '') + scale_color_discrete('')
+plot1
+```
+
+### K= 4
+
+```{r}
+labs_clus <- factor(apply(topic_clus_list[[4]]$omega, 1, function(x) return(which.max(x))))
+data_ggplot <- data.frame(labels = labs_clus,
+                          tSNE_1 = bmmc@dr$tsne@cell.embeddings[, 1],
+                          tSNE_2 = bmmc@dr$tsne@cell.embeddings[, 2])
+plot1 <- ggplot(data_ggplot) + theme(panel.background = element_rect(colour = "black", size = 1), 
+                                     panel.grid.major = element_blank(), 
+                                     panel.grid.minor = element_blank(), 
+                                     axis.text.y = element_blank(),
+                                     axis.text.x = element_blank(),
+                                     axis.ticks = element_blank(),
+                                     legend.text = element_text(size = 15)) + geom_point(aes(x = tSNE_1, y = tSNE_2, color = labels), size = 0.5) + labs(x = 'tSNE 1', y = 'tSNE 2', title = '') + scale_color_discrete('')
+plot1
+```
+
+### K= 5
+
+```{r}
+labs_clus <- factor(apply(topic_clus_list[[5]]$omega, 1, function(x) return(which.max(x))))
+data_ggplot <- data.frame(labels = labs_clus,
+                          tSNE_1 = bmmc@dr$tsne@cell.embeddings[, 1],
+                          tSNE_2 = bmmc@dr$tsne@cell.embeddings[, 2])
+plot1 <- ggplot(data_ggplot) + theme(panel.background = element_rect(colour = "black", size = 1), 
+                                     panel.grid.major = element_blank(), 
+                                     panel.grid.minor = element_blank(), 
+                                     axis.text.y = element_blank(),
+                                     axis.text.x = element_blank(),
+                                     axis.ticks = element_blank(),
+                                     legend.text = element_text(size = 15)) + geom_point(aes(x = tSNE_1, y = tSNE_2, color = labels), size = 0.5) + labs(x = 'tSNE 1', y = 'tSNE 2', title = '') + scale_color_discrete('')
+plot1
+```
+
+### K= 6
+
+```{r}
+labs_clus <- factor(apply(topic_clus_list[[6]]$omega, 1, function(x) return(which.max(x))))
+data_ggplot <- data.frame(labels = labs_clus,
+                          tSNE_1 = bmmc@dr$tsne@cell.embeddings[, 1],
+                          tSNE_2 = bmmc@dr$tsne@cell.embeddings[, 2])
+plot1 <- ggplot(data_ggplot) + theme(panel.background = element_rect(colour = "black", size = 1), 
+                                     panel.grid.major = element_blank(), 
+                                     panel.grid.minor = element_blank(), 
+                                     axis.text.y = element_blank(),
+                                     axis.text.x = element_blank(),
+                                     axis.ticks = element_blank(),
+                                     legend.text = element_text(size = 15)) + geom_point(aes(x = tSNE_1, y = tSNE_2, color = labels), size = 0.5) + labs(x = 'tSNE 1', y = 'tSNE 2', title = '') + scale_color_discrete('')
+plot1
+```
+
+### K= 7
+
+```{r}
+labs_clus <- factor(apply(topic_clus_list[[7]]$omega, 1, function(x) return(which.max(x))))
+data_ggplot <- data.frame(labels = labs_clus,
+                          tSNE_1 = bmmc@dr$tsne@cell.embeddings[, 1],
+                          tSNE_2 = bmmc@dr$tsne@cell.embeddings[, 2])
+plot1 <- ggplot(data_ggplot) + theme(panel.background = element_rect(colour = "black", size = 1), 
+                                     panel.grid.major = element_blank(), 
+                                     panel.grid.minor = element_blank(), 
+                                     axis.text.y = element_blank(),
+                                     axis.text.x = element_blank(),
+                                     axis.ticks = element_blank(),
+                                     legend.text = element_text(size = 15)) + geom_point(aes(x = tSNE_1, y = tSNE_2, color = labels), size = 0.5) + labs(x = 'tSNE 1', y = 'tSNE 2', title = '') + scale_color_discrete('')
+plot1
+```
+
+
+### K= 8
+
+```{r}
+labs_clus <- factor(apply(topic_clus_list[[8]]$omega, 1, function(x) return(which.max(x))))
+data_ggplot <- data.frame(labels = labs_clus,
+                          tSNE_1 = bmmc@dr$tsne@cell.embeddings[, 1],
+                          tSNE_2 = bmmc@dr$tsne@cell.embeddings[, 2])
+plot1 <- ggplot(data_ggplot) + theme(panel.background = element_rect(colour = "black", size = 1), 
+                                     panel.grid.major = element_blank(), 
+                                     panel.grid.minor = element_blank(), 
+                                     axis.text.y = element_blank(),
+                                     axis.text.x = element_blank(),
+                                     axis.ticks = element_blank(),
+                                     legend.text = element_text(size = 15)) + geom_point(aes(x = tSNE_1, y = tSNE_2, color = labels), size = 0.5) + labs(x = 'tSNE 1', y = 'tSNE 2', title = '') + scale_color_discrete('')
+plot1
+```
+

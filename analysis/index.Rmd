@@ -8,8 +8,11 @@ output:
 The goal of this new template is to simplify the setup and maintenance of a research website.
 Specifically,
 
-*  Easier to build and extend the website using the new tools in the [rmarkdown][] package and [latest RStudio release][rstudio]
-*  Easier to deploy the website with Git and GitHub by only using one branch
+[Analysis of PBMC data across cohorts](pbmc_analysis.html)
+[Analysis of BMMC data across cohorts](bmmc_analysis.html)
 
-[rmarkdown]: http://rmarkdown.rstudio.com/rmarkdown_websites.htm
-[rstudio]: https://www.rstudio.com/products/rstudio/download/preview/
+Individual cohort level comparative analysis of PBMC and BMMC: [HC](HC_pbmc_bmmc_analysis.html),
+[RA1](RA1_pbmc_bmmc_analysis.html), [RA2](RA2_pbmc_bmmc_analysis.html),
+[RA3](RA3_pbmc_bmmc_analysis.html), [SLE](SLE_pbmc_bmmc_analysis.html).
+
+
